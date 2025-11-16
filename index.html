@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奇妙财富人格探测器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 同意书页面 -->
+        <div id="consent-page" class="page active">
+            <div class="consent-card">
+                <h1>🎯 数据使用同意书</h1>
+                <div class="consent-content">
+                    <p>欢迎参加奇妙财富人格测试！为了保护您的隐私并确保合规，请阅读以下说明：</p >
+                    
+                    <div class="consent-items">
+                        <div class="consent-item">
+                            <input type="checkbox" id="consent-data" class="consent-checkbox">
+                            <label for="consent-data">我同意匿名参与测试，测试结果仅用于个性化分析</label>
+                        </div>
+                        <div class="consent-item">
+                            <input type="checkbox" id="consent-analysis" class="consent-checkbox">
+                            <label for="consent-analysis">我同意匿名测试数据用于整体统计分析</label>
+                        </div>
+                        <div class="consent-item">
+                            <input type="checkbox" id="consent-storage" class="consent-checkbox">
+                            <label for="consent-storage">我了解测试数据将在本地存储，可随时清除</label>
+                        </div>
+                    </div>
+
+                    <div class="data-usage-info">
+                        <h3>📊 数据使用说明</h3>
+                        <ul>
+                            <li>• 所有数据均为<strong>匿名收集</strong>，不包含个人身份信息</li>
+                            <li>• 测试结果仅用于提供个性化财富人格分析</li>
+                            <li>• 汇总数据用于改进测试准确性和用户体验</li>
+                            <li>• 数据存储在您的浏览器本地，可随时清理</li>
+                            <li>• 我们遵循<strong>最小必要原则</strong>收集数据</li>
+                        </ul>
+                    </div>
+                </div>
+                <button id="consent-agree" class="btn-primary" disabled>同意并开始测试</button>
+                <button id="consent-decline" class="btn-secondary">暂不参与</button>
+            </div>
+        </div>
+
+        <!-- 版本选择页面 -->
+        <div id="home-page" class="page">
+            <div class="header">
+                <h1>💰 奇妙财富人格探测器</h1>
+                <p class="subtitle">发现你独特的财务性格密码</p >
+            </div>
+            
+            <div class="version-cards">
+                <!-- 快速版 -->
+                <div class="version-card" data-version="quick">
+                    <div class="version-badge">⚡</div>
+                    <h3>闪电探测版</h3>
+                    <p class="version-stats">10题 · 约3分钟</p >
+                    <div class="version-desc">
+                        <p>🎯 快速定位核心财富人格</p >
+                        <p>🚀 即刻获得有趣结果</p >
+                        <p>💫 适合时间紧张的你</p >
+                    </div>
+                    <button class="btn-version" onclick="selectVersion('quick')">立即开始</button>
+                </div>
+
+                <!-- 标准版 -->
+                <div class="version-card featured" data-version="standard">
+                    <div class="version-badge">⭐</div>
+                    <h3>精准扫描版</h3>
+                    <p class="version-stats">20题 · 约6分钟</p >
+                    <div class="version-desc">
+                        <p>🎯 全面分析财富人格组合</p >
+                        <p>📊 详细人格特质解析</p >
+                        <p>💡 个性化理财建议</p >
+                    </div>
+                    <button class="btn-version" onclick="selectVersion('standard')">开始测试</button>
+                </div>
+
+                <!-- 深度版 -->
+                <div class="version-card" data-version="deep">
+                    <div class="version-badge">🔍</div>
+                    <h3>深度挖掘版</h3>
+                    <p class="version-stats">45题 · 约15分钟</p >
+                    <div class="version-desc">
+                        <p>🎯 最全面的财富人格分析</p >
+                        <p>🌟 发现隐藏财务特质</p >
+                        <p>📈 详细成长路径规划</p >
+                        <p>🎁 专属财务成长指南</p >
+                    </div>
+                    <button class="btn-version" onclick="selectVersion('deep')">深度探索</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 风格选择页面 -->
+        <div id="style-page" class="page">
+            <div class="style-selection">
+                <h2>🎨 选择你的财富人格展现风格</h2>
+                <p>同样的你，不同的表达方式</p >
+                
+                <div class="style-options">
+                    <div class="style-option" data-style="ancient">
+                        <div class="style-icon">🏮</div>
+                        <h3>古风雅韵</h3>
+                        <p>诗词歌赋，古韵悠长</p >
+                    </div>
+                    
+                    <div class="style-option" data-style="scifi">
+                        <div class="style-icon">🚀</div>
+                        <h3>科幻未来</h3>
+                        <p>科技感十足，脑洞大开</p >
+                    </div>
+                    
+                    <div class="style-option" data-style="modern">
+                        <div class="style-icon">💼</div>
+                        <h3>现代都市</h3>
+                        <p>职场商战，真实有趣</p >
+                    </div>
+                    
+                    <div class="style-option" data-style="fruit">
+                        <div class="style-icon">🍎</div>
+                        <h3>蔬菜王国</h3>
+                        <p>清新自然，生动形象</p >
+                    </div>
+                    
+                    <div class="style-option" data-style="animal">
+                        <div class="style-icon">🐾</div>
+                        <h3>动物世界</h3>
+                        <p>萌趣可爱，特性鲜明</p >
+                    </div>
+                </div>
+                
+                <button id="confirm-style" class="btn-primary">确认风格，开始测试</button>
+            </div>
+        </div>
+
+        <!-- 故事引言页面 -->
+        <div id="story-intro-page" class="page">
+            <!-- 动态生成 -->
+        </div>
+
+        <!-- 测试页面 -->
+        <div id="quiz-page" class="page">
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span id="progress-text">0/10</span>
+                    <span id="version-indicator"></span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div id="chapter-info" class="chapter-info"></div>
+            
+            <div class="question-card">
+                <h2 id="question-text"></h2>
+                <div id="options-container" class="options"></div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div id="result-page" class="page">
+            <div class="result-card">
+                <div class="result-header">
+                    <div id="result-icon" class="result-icon"></div>
+                    <h1 id="result-title"></h1>
+                    <div class="style-badge" id="style-badge"></div>
+                </div>
+                
+                <div class="rich-potential-section">
+                    <h3>💰 大富之兆</h3>
+                    <div class="rich-meter">
+                        <div class="rich-labels">
+                            <span>财运平平</span>
+                            <span>大富大贵</span>
+                        </div>
+                        <div class="rich-bar-container">
+                            <div class="rich-bar" id="rich-bar"></div>
+                        </div>
+                        <div class="rich-percent">
+                            <span id="rich-percent">0</span>%
+                        </div>
+                    </div>
+                    <p id="rich-desc" class="rich-desc"></p >
+                </div>
+                
+                <div class="result-description">
+                    <div id="result-desc"></div>
+                </div>
+                
+                <div class="style-switcher">
+                    <h4>换个风格看看：</h4>
+                    <div class="style-buttons" id="style-buttons"></div>
+                </div>
+                
+                <div class="result-tips">
+                    <h3>💡 财富密码</h3>
+                    <p id="result-tips"></p >
+                </div>
+
+                <div class="result-actions">
+                    <button id="share-btn" class="btn-secondary">分享结果</button>
+                    <button id="restart-btn" class="btn-primary">再测一次</button>
+                    <button id="data-management" class="btn-tertiary">数据管理</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据管理页面 -->
+        <div id="data-page" class="page">
+            <div class="data-card">
+                <h2>🔐 数据管理</h2>
+                <div class="data-actions">
+                    <div class="data-action">
+                        <h3>📊 测试历史</h3>
+                        <p>查看您之前的测试结果</p >
+                        <button id="view-history" class="btn-secondary">查看历史</button>
+                    </div>
+                    <div class="data-action">
+                        <h3>🗑️ 清除数据</h3>
+                        <p>删除所有测试数据</p >
+                        <button id="clear-data" class="btn-warning">清除数据</button>
+                    </div>
+                    <div class="data-action">
+                        <h3>📥 导出数据</h3>
+                        <p>导出您的测试结果</p >
+                        <button id="export-data" class="btn-secondary">导出数据</button>
+                    </div>
+                </div>
+                <div id="test-history" class="test-history"></div>
+                <button id="back-to-result" class="btn-primary">返回结果</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据收集通知 -->
+    <div id="data-notification" class="notification">
+        <div class="notification-content">
+            <span>我们使用匿名数据改进测试体验</span>
+            <button id="close-notification">×</button>
+        </div>
+    </div>
+
+    <!-- 引入所有JavaScript文件 -->
+    <script src="data.js"></script>
+    <script src="compliance.js"></script>
+    <script src="utils/story-engine.js"></script>
+    <script src="stories/ancient.js"></script>
+    <script src="stories/animal.js"></script>
+    <script src="stories/scifi.js"></script>
+    <script src="stories/modern.js"></script>
+    <script src="stories/fruit.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
