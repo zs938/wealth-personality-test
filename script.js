@@ -556,10 +556,7 @@ function shareResult() {
 
 // 重新开始测试
 function restartTest() {
-    // 重置背景
-    document.body.className = '';
-    
-    // 重置所有状态
+    // 重置所有测试状态变量
     currentVersion = null;
     selectedStyle = null;
     selectedQuestions = [];
@@ -567,45 +564,100 @@ function restartTest() {
     userScores = {};
     userAnswers = [];
     testStartTime = null;
-    
-    // 重置故事引擎
-    storyEngine.currentStory = null;
-    storyEngine.currentChapter = null;
-    storyEngine.userChoices = [];
-    
-    // 回到首页
-    document.getElementById('result-page').classList.remove('active');
+
+    // 重置故事引擎状态 (如果存在相关方法)
+    if (storyEngine) {
+        storyEngine.currentStory = null;
+        storyEngine.userChoices = [];
+        // 根据需要重置其他状态
+    }
+
+    // 移除可能存在的风格化背景类
+    document.body.className = '';
+
+    // 隐藏所有页面，然后只显示首页
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
     document.getElementById('home-page').classList.add('active');
+
+    // 可选：滚动到页面顶部
+    window.scrollTo(0, 0);
+    
+    console.log('测试状态已重置，返回首页');
 }
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-});
-// 在 script.js 最底部添加紧急修复
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM加载完成，执行紧急修复');
+    console.log('🚀 开始初始化应用');
     
-    // 重新绑定所有关键事件
-    setTimeout(function() {
-        // 重新绑定确认风格按钮
-        const confirmBtn = document.getElementById('confirm-style');
-        if (confirmBtn) {
-            confirmBtn.onclick = startQuiz;
-            console.log('重新绑定确认风格按钮');
-        }
-        
-        // 重新绑定版本选择按钮
-        document.querySelectorAll('.btn-version').forEach(btn => {
-            btn.onclick = function() {
-                const version = this.closest('.version-card').dataset.version;
-                selectVersion(version);
-            };
-        });
-        
-        console.log('紧急修复完成');
-    }, 1000);
+    // 执行基础初始化
+    initApp();
+    
+    // 延迟绑定所有关键事件
+    setTimeout(initializeAllEvents, 300);
 });
+
+function initializeAllEvents() {
+    console.log('🔗 绑定所有事件监听器');
+    
+    // 绑定确认风格按钮
+    bindButton('confirm-style', startQuiz, '确认风格');
+    
+    // 绑定再测一次按钮  
+    bindButton('restart-btn', restartTest, '再测一次');
+    
+    // 绑定分享按钮
+    bindButton('share-btn', shareResult, '分享结果');
+    
+    // 绑定版本选择按钮
+    document.querySelectorAll('.btn-version').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const version = this.closest('.version-card').dataset.version;
+            console.log('选择了版本:', version);
+            selectVersion(version);
+        });
+    });
+    
+    // 绑定风格选择
+    document.querySelectorAll('.style-option').forEach(option => {
+        option.addEventListener('click', function() {
+            selectStyle(this.dataset.style);
+        });
+    });
+    
+    console.log('✅ 所有事件绑定完成');
+}
+
+// 通用的按钮绑定函数
+function bindButton(buttonId, clickHandler, buttonName) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+        button.addEventListener('click', clickHandler);
+        console.log(`✅ 绑定${buttonName}按钮`);
+    } else {
+        console.error(`❌ 找不到${buttonName}按钮: ${buttonId}`);
+    }
+}
+
+// 风格选择函数
+function selectStyle(style) {
+    console.log('选择了风格:', style);
+    
+    // 更新UI
+    document.querySelectorAll('.style-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+    
+    // 更新状态
+    selectedStyle = style;
+}
+
+function initApp() {
+    console.log('🔧 执行基础初始化');
+    // 你原有的初始化代码
+}
 // 调试函数 - 在控制台运行这个来检查状态
 window.debugStyleSelection = function() {
     console.log('=== 风格选择调试信息 ===');
