@@ -1,4 +1,4 @@
-// script.js - 主要逻辑
+// script.js - 主要逻辑（完整修复版）
 
 // 全局变量
 let currentVersion = null;
@@ -9,58 +9,149 @@ let userScores = {};
 let testStartTime = null;
 let userAnswers = [];
 
-// 初始化函数
+// 初始化应用
 function initApp() {
-    // 事件监听
-    document.getElementById('confirm-style').addEventListener('click', startQuiz);
-    document.getElementById('restart-btn').addEventListener('click', restartTest);
-    document.getElementById('share-btn').addEventListener('click', shareResult);
+    console.log('🚀 应用初始化开始');
     
-    // 风格选择事件
+    // 绑定确认风格按钮
+    const confirmBtn = document.getElementById('confirm-style');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', startQuiz);
+        console.log('✅ 确认风格按钮绑定成功');
+    } else {
+        console.error('❌ 找不到确认风格按钮');
+    }
+
+    // 绑定版本选择按钮
+    document.querySelectorAll('.btn-version').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const version = this.closest('.version-card').dataset.version;
+            selectVersion(version);
+        });
+    });
+
+    // 绑定风格选择
+    bindStyleSelection();
+    
+    console.log('✅ 应用初始化完成');
+}
+
+// 专门绑定风格选择的函数
+function bindStyleSelection() {
+    console.log('🎨 绑定风格选择事件');
+    
+    const styleOptions = document.querySelectorAll('.style-option');
+    console.log('找到风格选项数量:', styleOptions.length);
+    
+    styleOptions.forEach(option => {
+        // 移除旧的事件监听器
+        option.replaceWith(option.cloneNode(true));
+    });
+    
+    // 重新绑定事件
     document.querySelectorAll('.style-option').forEach(option => {
         option.addEventListener('click', function() {
-            document.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('selected'));
+            console.log('🎯 风格选项被点击:', this.dataset.style);
+            
+            // 移除其他选项的选中状态
+            document.querySelectorAll('.style-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // 添加当前选项的选中状态
             this.classList.add('selected');
+            
+            // 设置选中的风格
             selectedStyle = this.dataset.style;
+            console.log('✅ 设置selectedStyle为:', selectedStyle);
+            
+            // 验证设置
+            console.log('验证 - selectedStyle:', window.selectedStyle);
         });
     });
 }
 
-// 版本选择
+// 版本选择函数
 function selectVersion(version) {
+    console.log('📋 选择版本:', version);
     currentVersion = version;
     
     // 记录测试开始
-    if (complianceManager) {
-        complianceManager.recordTestStart(version);
-    }
-    
     testStartTime = Date.now();
     
     // 隐藏首页，显示风格选择
     document.getElementById('home-page').classList.remove('active');
     document.getElementById('style-page').classList.add('active');
+    
+    // 重新绑定风格选择（确保事件存在）
+    setTimeout(bindStyleSelection, 100);
 }
 
-// 开始测试
+// 开始测试 - 修复版本
 function startQuiz() {
+    console.log('=== 开始测试 ===');
+    console.log('当前风格:', selectedStyle);
+    console.log('当前版本:', currentVersion);
+    
+    // 详细检查风格选择状态
+    const selectedOption = document.querySelector('.style-option.selected');
+    console.log('DOM中选中的风格元素:', selectedOption);
+    console.log('所有风格选项:', document.querySelectorAll('.style-option'));
+    
+    // 如果selectedStyle为空，尝试从DOM获取
+    if (!selectedStyle && selectedOption) {
+        selectedStyle = selectedOption.dataset.style;
+        console.log('从DOM重新获取风格:', selectedStyle);
+    }
+    
     if (!selectedStyle) {
         alert('请选择一种展现风格！');
+        
+        // 显示调试信息
+        console.error('❌ 风格选择失败:');
+        console.error('- selectedStyle:', selectedStyle);
+        console.error('- 选中的DOM元素:', selectedOption);
+        console.error('- 所有风格选项的数据:', 
+            Array.from(document.querySelectorAll('.style-option')).map(opt => ({
+                dataset: opt.dataset.style,
+                hasSelected: opt.classList.contains('selected')
+            }))
+        );
         return;
     }
     
-    // 应用风格化背景
-    document.body.className = `${selectedStyle}-style`;
+    if (!currentVersion) {
+        alert('请先选择测试版本！');
+        return;
+    }
     
-    // 加载对应风格的故事题目
-    selectedQuestions = storyEngine.loadStory(selectedStyle, currentVersion);
-    userScores = {};
-    currentQuestionIndex = 0;
-    userAnswers = [];
-    
-    // 显示故事引言
-    const storyInfo = storyEngine.getStoryInfo();
-    showStoryIntroduction(storyInfo);
+    try {
+        // 应用风格化背景
+        document.body.className = `${selectedStyle}-style`;
+        console.log('应用背景样式:', document.body.className);
+        
+        // 加载对应风格的故事题目
+        selectedQuestions = storyEngine.loadStory(selectedStyle, currentVersion);
+        console.log('加载题目数量:', selectedQuestions.length);
+        
+        if (!selectedQuestions || selectedQuestions.length === 0) {
+            console.error('无法加载题目，使用备用题目');
+            selectedQuestions = selectQuestionsForVersion(currentVersion);
+        }
+        
+        userScores = {};
+        currentQuestionIndex = 0;
+        userAnswers = [];
+        
+        // 显示故事引言
+        const storyInfo = storyEngine.getStoryInfo();
+        console.log('故事信息:', storyInfo);
+        showStoryIntroduction(storyInfo);
+        
+    } catch (error) {
+        console.error('启动测试时出错:', error);
+        alert('启动测试时出现错误，请刷新页面重试');
+    }
 }
 
 // 显示故事引言
@@ -68,15 +159,15 @@ function showStoryIntroduction(storyInfo) {
     document.getElementById('style-page').classList.remove('active');
     
     const introHTML = `
-        <div class="story-introduction">
-            <h1>${storyInfo.title}</h1>
-            <div class="story-content">
-                <p>${storyInfo.introduction}</p >
-                <div class="story-begin">
-                    <button id="begin-story" class="btn-primary">开始冒险</button>
-                </div>
+    <div class="story-introduction">
+        <h1>${storyInfo.title}</h1>
+        <div class="story-content">
+            <p>${storyInfo.introduction}</p >
+            <div class="story-begin">
+                <button id="begin-story" class="btn-primary">开始冒险</button>
             </div>
         </div>
+    </div>
     `;
     
     // 创建故事引言页面
@@ -92,7 +183,7 @@ function showStoryIntroduction(storyInfo) {
         storyPage.classList.add('active');
     }
     
-    // 开始故事按钮事件
+    // 绑定开始故事按钮
     document.getElementById('begin-story').addEventListener('click', () => {
         storyPage.classList.remove('active');
         document.getElementById('quiz-page').classList.add('active');
@@ -100,26 +191,58 @@ function showStoryIntroduction(storyInfo) {
     });
 }
 
-// 显示题目
+// DOM加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM加载完成');
+    initApp();
+    
+    // 备用初始化 - 3秒后再次检查
+    setTimeout(() => {
+        console.log('⏰ 备用初始化检查');
+        const confirmBtn = document.getElementById('confirm-style');
+        if (confirmBtn && !confirmBtn.onclick) {
+            console.log('🔄 重新绑定确认按钮');
+            confirmBtn.addEventListener('click', startQuiz);
+        }
+        
+        // 重新绑定风格选择
+        bindStyleSelection();
+    }, 3000);
+});
 function showQuestion() {
+    console.log('显示问题:', currentQuestionIndex, '总问题数:', selectedQuestions.length);
+    
+    // 首先检查是否已经完成所有题目
     if (currentQuestionIndex >= selectedQuestions.length) {
+        console.log('所有题目完成，准备显示结果');
         showResult();
         return;
     }
     
     const questionData = selectedQuestions[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / selectedQuestions.length) * 100;
+    console.log('当前问题数据:', questionData);
     
-    // 更新进度和章节信息
+    if (!questionData) {
+        console.error('问题数据为空，跳过此题');
+        currentQuestionIndex++;
+        setTimeout(showQuestion, 100); // 延迟一下避免递归过深
+        return;
+    }
+    
+    // 更新进度条
+    const progress = ((currentQuestionIndex + 1) / selectedQuestions.length) * 100;
     document.getElementById('progress-text').textContent = 
         `${currentQuestionIndex + 1}/${selectedQuestions.length}`;
     document.getElementById('progress-bar').style.width = `${progress}%`;
-    document.getElementById('version-indicator').textContent = 
-        versionConfig[currentVersion]?.emoji + ' ' + versionConfig[currentVersion]?.name;
     
-    // 显示章节故事
+    // 更新版本指示器
+    const versionInfo = versionConfig[currentVersion];
+    document.getElementById('version-indicator').textContent = 
+        (versionInfo?.emoji || '🎯') + ' ' + (versionInfo?.name || '测试版');
+    
+    // 显示章节信息
     const chapterInfo = document.getElementById('chapter-info');
-    if (chapterInfo) {
+    if (chapterInfo && questionData.chapter && questionData.story) {
         chapterInfo.innerHTML = `
             <div class="chapter-title">${questionData.chapter}</div>
             <div class="chapter-story">${questionData.story}</div>
@@ -127,7 +250,8 @@ function showQuestion() {
     }
     
     // 显示题目
-    document.getElementById('question-text').textContent = questionData.question;
+    const questionText = document.getElementById('question-text');
+    questionText.textContent = questionData.question || "请做出你的选择...";
     
     // 显示选项
     const optionsContainer = document.getElementById('options-container');
@@ -136,20 +260,23 @@ function showQuestion() {
     questionData.options.forEach((option, index) => {
         const optionElement = document.createElement('div');
         optionElement.className = 'option';
-        optionElement.innerHTML = option.text;
+        optionElement.innerHTML = option.text || `选项 ${index + 1}`;
         optionElement.addEventListener('click', () => selectOption(option, index));
         optionsContainer.appendChild(optionElement);
     });
 }
-
 // 选择选项
+// 在 script.js 中找到 selectOption 函数，替换为：
 function selectOption(option, optionIndex) {
+    console.log('选择选项:', optionIndex, '当前题目:', currentQuestionIndex);
+    
     // 记录到故事引擎
     storyEngine.recordChoice(currentQuestionIndex, optionIndex, option.scores);
     
     // 记录答案
     userAnswers.push({
         questionIndex: currentQuestionIndex,
+        optionIndex: optionIndex,
         scores: option.scores,
         timestamp: new Date().toISOString()
     });
@@ -159,15 +286,20 @@ function selectOption(option, optionIndex) {
         userScores[type] = (userScores[type] || 0) + option.scores[type];
     });
     
-    // 显示选项响应（如果有）
+    console.log('当前分数:', userScores);
+    
+    // 显示选项响应或继续下一题 - 这是关键修复
     if (option.response) {
         showOptionResponse(option.response);
     } else {
-        continueToNextQuestion();
+        // 如果没有响应文本，直接继续
+        setTimeout(() => {
+            continueToNextQuestion();
+        }, 300);
     }
 }
 
-// 显示选项响应
+// 确保 showOptionResponse 函数存在且正确
 function showOptionResponse(response) {
     const responseHTML = `
         <div class="option-response-overlay">
@@ -177,27 +309,33 @@ function showOptionResponse(response) {
             </div>
         </div>
     `;
-    
+
     const overlay = document.createElement('div');
     overlay.innerHTML = responseHTML;
     document.getElementById('quiz-page').appendChild(overlay);
-    
+
     document.getElementById('continue-btn').addEventListener('click', () => {
         overlay.remove();
         continueToNextQuestion();
     });
 }
 
-// 继续到下一题
+// 确保 continueToNextQuestion 函数正确
 function continueToNextQuestion() {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < selectedQuestions.length) {
-        showQuestion();
-    } else {
-        showResult();
-    }
+    console.log('继续到下一题，当前索引:', currentQuestionIndex);
+    
+    // 立即显示下一题或结果
+    setTimeout(() => {
+        if (currentQuestionIndex < selectedQuestions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion();
+        } else {
+            // 这是最后一题，完成测试
+            console.log('最后一题完成，显示结果');
+            showResult();
+        }
+    }, 100);
 }
-
 // 显示结果
 function showResult() {
     const testDuration = Date.now() - testStartTime;
@@ -444,3 +582,51 @@ function restartTest() {
 document.addEventListener('DOMContentLoaded', function() {
     initApp();
 });
+// 在 script.js 最底部添加紧急修复
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，执行紧急修复');
+    
+    // 重新绑定所有关键事件
+    setTimeout(function() {
+        // 重新绑定确认风格按钮
+        const confirmBtn = document.getElementById('confirm-style');
+        if (confirmBtn) {
+            confirmBtn.onclick = startQuiz;
+            console.log('重新绑定确认风格按钮');
+        }
+        
+        // 重新绑定版本选择按钮
+        document.querySelectorAll('.btn-version').forEach(btn => {
+            btn.onclick = function() {
+                const version = this.closest('.version-card').dataset.version;
+                selectVersion(version);
+            };
+        });
+        
+        console.log('紧急修复完成');
+    }, 1000);
+});
+// 调试函数 - 在控制台运行这个来检查状态
+window.debugStyleSelection = function() {
+    console.log('=== 风格选择调试信息 ===');
+    console.log('selectedStyle:', window.selectedStyle);
+    console.log('currentVersion:', window.currentVersion);
+    
+    const selectedOption = document.querySelector('.style-option.selected');
+    console.log('选中的DOM元素:', selectedOption);
+    console.log('选中的风格值:', selectedOption ? selectedOption.dataset.style : '无');
+    
+    console.log('所有风格选项:');
+    document.querySelectorAll('.style-option').forEach((opt, index) => {
+        console.log(`选项 ${index}:`, {
+            text: opt.textContent,
+            dataStyle: opt.dataset.style,
+            isSelected: opt.classList.contains('selected')
+        });
+    });
+    
+    console.log('确认按钮:', document.getElementById('confirm-style'));
+    console.log('====================');
+};
+
+// 在控制台运行 debugStyleSelection() 来检查状态

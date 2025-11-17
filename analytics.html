@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财富测试数据分析</title>
+    <style>
+        body { 
+            font-family: 'Microsoft YaHei', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+        }
+        .stat-number { 
+            font-size: 2.5em; 
+            font-weight: bold; 
+            margin: 10px 0; 
+        }
+        .chart-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            border: 1px solid #ddd; 
+        }
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        .data-table th, .data-table td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left; 
+        }
+        .data-table th { 
+            background: #f5f5f5; 
+        }
+        .refresh-btn { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 财富测试数据分析看板</h1>
+        
+        <button class="refresh-btn" onclick="loadAnalyticsData()">🔄 刷新数据</button>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>总访问量</h3>
+                <div class="stat-number" id="total-views">0</div>
+                <p>页面浏览次数</p >
+            </div>
+            <div class="stat-card">
+                <h3>测试完成数</h3>
+                <div class="stat-number" id="completed-tests">0</div>
+                <p>完成的测试数量</p >
+            </div>
+            <div class="stat-card">
+                <h3>完成率</h3>
+                <div class="stat-number" id="completion-rate">0%</div>
+                <p>访问到完成的比例</p >
+            </div>
+            <div class="stat-card">
+                <h3>平均用时</h3>
+                <div class="stat-number" id="avg-duration">0s</div>
+                <p>平均测试时间</p >
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>📊 人格类型分布</h3>
+            <div id="personality-chart">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>人格类型</th>
+                            <th>数量</th>
+                            <th>百分比</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personality-table">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>📈 每日活跃度</h3>
+            <div id="daily-activity">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>访问量</th>
+                            <th>完成测试</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-table">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>🎯 版本使用情况</h3>
+            <div id="version-usage">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>测试版本</th>
+                            <th>使用次数</th>
+                            <th>比例</th>
+                        </tr>
+                    </thead>
+                    <tbody id="version-table">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>🕒 最近活动</h3>
+            <div id="recent-activity" style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>事件类型</th>
+                            <th>详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-table">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('get-analytics.php');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                alert('加载数据失败，请检查服务器连接');
+            }
+        }
+        
+        function updateDashboard(data) {
+            // 更新基础统计
+            document.getElementById('total-views').textContent = data.totalViews.toLocaleString();
+            document.getElementById('completed-tests').textContent = data.completedTests.toLocaleString();
+            document.getElementById('completion-rate').textContent = data.completionRate + '%';
+            document.getElementById('avg-duration').textContent = Math.round(data.avgDuration / 1000) + 's';
+            
+            // 更新人格类型分布
+            updatePersonalityChart(data.personalityDistribution);
+            
+            // 更新每日活跃度
+            updateDailyActivity(data.dailyActivity);
+            
+            // 更新版本使用情况
+            updateVersionUsage(data.versionUsage);
+            
+            // 更新最近活动
+            updateRecentActivity(data.recentActivity);
+        }
+        
+        function updatePersonalityChart(distribution) {
+            const tableBody = document.getElementById('personality-table');
+            tableBody.innerHTML = '';
+            
+            const total = Object.values(distribution).reduce((sum, count) => sum + count, 0);
+            
+            Object.entries(distribution).forEach(([type, count]) => {
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${type}</td>
+                    <td>${count}</td>
+                    <td>${percentage}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function updateDailyActivity(dailyData) {
+            const tableBody = document.getElementById('daily-table');
+            tableBody.innerHTML = '';
+            
+            Object.entries(dailyData).forEach(([date, stats]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${stats.views || 0}</td>
+                    <td>${stats.completions || 0}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function updateVersionUsage(versionData) {
+            const tableBody = document.getElementById('version-table');
+            tableBody.innerHTML = '';
+            
+            const total = Object.values(versionData).reduce((sum, count) => sum + count, 0);
+            
+            Object.entries(versionData).forEach(([version, count]) => {
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${version}</td>
+                    <td>${count}</td>
+                    <td>${percentage}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function updateRecentActivity(activities) {
+            const tableBody = document.getElementById('activity-table');
+            tableBody.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                    <td>${activity.type}</td>
+                    <td>${JSON.stringify(activity.details)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 页面加载时自动加载数据
+        document.addEventListener('DOMContentLoaded', loadAnalyticsData);
+        
+        // 每5分钟自动刷新
+        setInterval(loadAnalyticsData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
